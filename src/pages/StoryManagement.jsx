@@ -13,8 +13,8 @@ import {
   BookOpen
 } from 'lucide-react';
 
-// 🚨 PRODUCTION FIX: Remove localhost fallback - MUST have VITE_API_URL set
-const API_URL = import.meta.env.VITE_API_URL;
+// Production API URL with fallback
+const API_URL = import.meta.env.VITE_API_URL || 'https://bouncesteps-backend-gvnqzuauoa-ew.a.run.app/api';
 
 if (!API_URL) {
   throw new Error('🚨 VITE_API_URL environment variable is required in production');
