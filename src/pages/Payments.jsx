@@ -25,8 +25,8 @@ const Payments = () => {
         }
       });
 
-      setPayments(response.data.payments);
-      setPagination(prev => ({ ...prev, ...response.data.pagination }));
+      setPayments((response.data.data && response.data.data.payments) || []);
+      setPagination(prev => ({ ...prev, ...((response.data.data && response.data.data.pagination) || {}) }));
     } catch (error) {
       console.error('Failed to fetch payments:', error);
     } finally {
@@ -37,7 +37,7 @@ const Payments = () => {
   const fetchStats = async () => {
     try {
       const response = await api.get('/payments/stats');
-      setStats(response.data.stats);
+      setStats(response.data.data || null);
     } catch (error) {
       console.error('Failed to fetch stats:', error);
     }

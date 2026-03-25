@@ -26,7 +26,7 @@ const Travelers = () => {
         }
       });
 
-      setTravelers(response.data.users);
+      setTravelers(response.data.data || []);
       setPagination(prev => ({ ...prev, ...response.data.pagination }));
     } catch (error) {
       console.error('Failed to fetch travelers:', error);

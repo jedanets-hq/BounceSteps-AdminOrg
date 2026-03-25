@@ -105,8 +105,8 @@ const Dashboard = () => {
         api.get('/dashboard/activity?limit=10')
       ]);
 
-      setStats(statsRes.data.stats);
-      setActivity(activityRes.data.activities);
+      setStats(statsRes.data.data || null);
+      setActivity(activityRes.data.data || []);
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
     } finally {

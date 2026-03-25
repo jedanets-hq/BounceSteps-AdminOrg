@@ -116,7 +116,7 @@ const Badges = () => {
         }
       });
 
-      setProviders(response.data.providers || []);
+      setProviders((response.data.data && response.data.data.providers) || []);
     } catch (error) {
       console.error('Failed to fetch providers:', error);
     } finally {

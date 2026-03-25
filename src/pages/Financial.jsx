@@ -26,7 +26,7 @@ const Financial = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/admin/payments/accounts');
+      const response = await api.get('/payments/accounts');
       setAccounts(response.data.accounts || []);
     } catch (error) {
       console.error('Failed to fetch data:', error);
@@ -40,9 +40,9 @@ const Financial = () => {
     
     try {
       if (editingAccount) {
-        await api.put(`/admin/payments/accounts/${editingAccount.id}`, formData);
+        await api.put(`/payments/accounts/${editingAccount.id}`, formData);
       } else {
-        await api.post('/admin/payments/accounts', formData);
+        await api.post('/payments/accounts', formData);
       }
       
       setShowAddAccount(false);
@@ -59,7 +59,7 @@ const Financial = () => {
     if (!confirm('Are you sure you want to delete this payment account?')) return;
     
     try {
-      await api.delete(`/admin/payments/accounts/${id}`);
+      await api.delete(`/payments/accounts/${id}`);
       fetchData();
       alert('Payment account deleted successfully!');
     } catch (error) {

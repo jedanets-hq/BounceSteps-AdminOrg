@@ -37,7 +37,7 @@ const Users = () => {
         }
       });
 
-      setUsers(response.data.users);
+      setUsers(response.data.data || []);
       setPagination(prev => ({ ...prev, ...response.data.pagination }));
     } catch (error) {
       console.error('Failed to fetch users:', error);
