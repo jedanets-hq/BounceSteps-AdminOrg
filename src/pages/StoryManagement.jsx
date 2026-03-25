@@ -13,8 +13,8 @@ import {
   BookOpen
 } from 'lucide-react';
 
-// Production API URL with fallback
-const API_URL = import.meta.env.VITE_API_URL || 'https://bouncesteps-backend-gvnqzuauoa-ew.a.run.app/api';
+// Production API URL with fallback - UPDATED TO NEW CLOUD RUN SERVICE
+const API_URL = import.meta.env.VITE_API_URL || 'https://bouncesteps-backend-392429231515.us-central1.run.app/api';
 
 if (!API_URL) {
   throw new Error('🚨 VITE_API_URL environment variable is required in production');

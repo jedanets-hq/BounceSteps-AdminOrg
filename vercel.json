@@ -3,7 +3,7 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "env": {
-    "VITE_API_URL": "https://bouncesteps-backend-gvnqzuauoa-ew.a.run.app/api",
+    "VITE_API_URL": "https://bouncesteps-backend-392429231515.us-central1.run.app/api",
     "VITE_NODE_ENV": "production"
   },
   "rewrites": [

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Production API URL with fallback
-const API_URL = import.meta.env.VITE_API_URL || 'https://bouncesteps-backend-gvnqzuauoa-ew.a.run.app/api';
+// Production API URL with fallback - UPDATED TO NEW CLOUD RUN SERVICE
+const API_URL = import.meta.env.VITE_API_URL || 'https://bouncesteps-backend-392429231515.us-central1.run.app/api';
 
 console.log('🚨 API URL IN USE:', API_URL);
 
