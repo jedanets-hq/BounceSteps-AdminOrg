@@ -26,10 +26,20 @@ const Travelers = () => {
         }
       });
 
-      setTravelers(response.data.data || []);
-      setPagination(prev => ({ ...prev, ...response.data.pagination }));
+      console.log('Travelers API Response:', response.data);
+
+      // Handle both data structures
+      const travelersData = response.data.data || response.data.providers || [];
+      setTravelers(travelersData);
+      setPagination(prev => ({ 
+        ...prev, 
+        ...response.data.pagination,
+        total: response.data.pagination?.total || response.data.pagination?.totalItems || 0,
+        totalPages: response.data.pagination?.totalPages || 1
+      }));
     } catch (error) {
       console.error('Failed to fetch travelers:', error);
+      alert('Failed to load travelers. Please check console for details.');
     } finally {
       setLoading(false);
     }
@@ -38,19 +48,25 @@ const Travelers = () => {
   const handleSuspend = async (userId) => {
     if (!confirm('Suspend this traveler?')) return;
     try {
-      await api.post(`/users/${userId}/suspend`);
+      const response = await api.post(`/users/${userId}/suspend`);
+      console.log('Suspend response:', response.data);
+      alert('Traveler suspended successfully!');
       fetchTravelers();
     } catch (error) {
-      alert('Failed to suspend traveler');
+      console.error('Suspend error:', error);
+      alert('Failed to suspend traveler: ' + (error.response?.data?.message || error.message));
     }
   };
 
   const handleRestore = async (userId) => {
     try {
-      await api.post(`/users/${userId}/restore`);
+      const response = await api.post(`/users/${userId}/restore`);
+      console.log('Restore response:', response.data);
+      alert('Traveler restored successfully!');
       fetchTravelers();
     } catch (error) {
-      alert('Failed to restore traveler');
+      console.error('Restore error:', error);
+      alert('Failed to restore traveler: ' + (error.response?.data?.message || error.message));
     }
   };
 

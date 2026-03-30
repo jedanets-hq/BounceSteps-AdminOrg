@@ -30,18 +30,37 @@ const Providers = () => {
         }
       });
 
-      // Filter by status if needed
-      let filteredProviders = response.data.providers || [];
-      if (status === 'active') {
-        filteredProviders = filteredProviders.filter(p => p.is_active);
-      } else if (status === 'inactive') {
-        filteredProviders = filteredProviders.filter(p => !p.is_active);
+      console.log('Providers API Response:', response.data);
+
+      // Handle both data structures
+      let providersData = [];
+      if (response.data.data && response.data.data.providers) {
+        providersData = response.data.data.providers;
+      } else if (response.data.providers) {
+        providersData = response.data.providers;
+      } else if (Array.isArray(response.data.data)) {
+        providersData = response.data.data;
       }
 
-      setProviders(filteredProviders);
-      setPagination(prev => ({ ...prev, ...response.data.pagination }));
+      // Filter by status if needed
+      if (status === 'active') {
+        providersData = providersData.filter(p => p.is_active);
+      } else if (status === 'inactive') {
+        providersData = providersData.filter(p => !p.is_active);
+      }
+
+      setProviders(providersData);
+      
+      // Handle pagination
+      const paginationData = response.data.data?.pagination || response.data.pagination || {};
+      setPagination(prev => ({ 
+        ...prev, 
+        total: paginationData.totalItems || paginationData.total || 0,
+        totalPages: paginationData.totalPages || 1
+      }));
     } catch (error) {
       console.error('Failed to fetch providers:', error);
+      alert('Failed to load providers. Please check console for details.');
     } finally {
       setLoading(false);
     }
@@ -53,15 +72,21 @@ const Providers = () => {
     try {
       // Suspend the user account
       const provider = providers.find(p => p.id === providerId);
+      console.log('Suspending provider:', provider);
+      
       if (provider && provider.user_id) {
-        await api.post(`/users/${provider.user_id}/suspend`, {
+        const response = await api.post(`/users/${provider.user_id}/suspend`, {
           reason: 'Suspended by admin'
         });
+        console.log('Suspend response:', response.data);
+        alert('Provider suspended successfully!');
         fetchProviders();
-        alert('Provider suspended successfully');
+      } else {
+        alert('Cannot suspend: Provider user_id not found');
       }
     } catch (error) {
-      alert('Failed to suspend provider');
+      console.error('Suspend error:', error);
+      alert('Failed to suspend provider: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -69,13 +94,19 @@ const Providers = () => {
     try {
       // Restore the user account
       const provider = providers.find(p => p.id === providerId);
+      console.log('Restoring provider:', provider);
+      
       if (provider && provider.user_id) {
-        await api.post(`/users/${provider.user_id}/restore`);
+        const response = await api.post(`/users/${provider.user_id}/restore`);
+        console.log('Restore response:', response.data);
+        alert('Provider restored successfully!');
         fetchProviders();
-        alert('Provider restored successfully');
+      } else {
+        alert('Cannot restore: Provider user_id not found');
       }
     } catch (error) {
-      alert('Failed to restore provider');
+      console.error('Restore error:', error);
+      alert('Failed to restore provider: ' + (error.response?.data?.message || error.message));
     }
   };
 

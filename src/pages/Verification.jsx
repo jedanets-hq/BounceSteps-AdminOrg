@@ -20,9 +20,14 @@ const Verification = () => {
         params: { status: filter }
       });
 
-      setRequests(response.data.requests || []);
+      console.log('Verification requests response:', response.data);
+
+      // Handle both data structures
+      const requestsData = response.data.requests || response.data.data || [];
+      setRequests(requestsData);
     } catch (error) {
       console.error('Failed to fetch verification requests:', error);
+      alert('Failed to load verification requests. Check console for details.');
     } finally {
       setLoading(false);
     }

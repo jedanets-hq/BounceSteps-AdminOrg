@@ -37,10 +37,20 @@ const Users = () => {
         }
       });
 
-      setUsers(response.data.data || []);
-      setPagination(prev => ({ ...prev, ...response.data.pagination }));
+      console.log('Users API Response:', response.data);
+      
+      // Handle both data structures (data array or data.providers array)
+      const usersData = response.data.data || response.data.providers || [];
+      setUsers(usersData);
+      setPagination(prev => ({ 
+        ...prev, 
+        ...response.data.pagination,
+        total: response.data.pagination?.total || response.data.pagination?.totalItems || 0,
+        totalPages: response.data.pagination?.totalPages || 1
+      }));
     } catch (error) {
       console.error('Failed to fetch users:', error);
+      alert('Failed to load users. Please check console for details.');
     } finally {
       setLoading(false);
     }
@@ -50,21 +60,27 @@ const Users = () => {
     if (!confirm('Are you sure you want to suspend this user?')) return;
 
     try {
-      await api.post(`/users/${userId}/suspend`, {
+      const response = await api.post(`/users/${userId}/suspend`, {
         reason: 'Suspended by admin'
       });
+      console.log('Suspend response:', response.data);
+      alert('User suspended successfully!');
       fetchUsers();
     } catch (error) {
-      alert('Failed to suspend user');
+      console.error('Suspend error:', error);
+      alert('Failed to suspend user: ' + (error.response?.data?.message || error.message));
     }
   };
 
   const handleRestore = async (userId) => {
     try {
-      await api.post(`/users/${userId}/restore`);
+      const response = await api.post(`/users/${userId}/restore`);
+      console.log('Restore response:', response.data);
+      alert('User restored successfully!');
       fetchUsers();
     } catch (error) {
-      alert('Failed to restore user');
+      console.error('Restore error:', error);
+      alert('Failed to restore user: ' + (error.response?.data?.message || error.message));
     }
   };
 
