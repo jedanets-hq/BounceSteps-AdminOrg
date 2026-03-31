@@ -12,13 +12,7 @@ import {
   RefreshCw,
   BookOpen
 } from 'lucide-react';
-
-// Production API URL with fallback - UPDATED TO NEW CLOUD RUN SERVICE
-const API_URL = import.meta.env.VITE_API_URL || 'https://bouncesteps-backend-392429231515.us-central1.run.app/api';
-
-if (!API_URL) {
-  throw new Error('🚨 VITE_API_URL environment variable is required in production');
-}
+import api from '../services/api';
 
 const StoryManagement = () => {
   const [stories, setStories] = useState([]);
@@ -35,25 +29,22 @@ const StoryManagement = () => {
     try {
       setLoading(true);
 
-      const url = filter === 'all' 
-        ? `${API_URL}/traveler-stories/admin/all`
-        : `${API_URL}/traveler-stories/admin/all?status=${filter}`;
+      const endpoint = filter === 'all' 
+        ? '/traveler-stories/all'
+        : `/traveler-stories/all?status=${filter}`;
 
-      console.log('🔍 Loading stories from:', url);
+      console.log('🔍 Loading stories from:', endpoint);
 
-      const response = await fetch(url);
+      const response = await api.get(endpoint);
 
       console.log('📡 Response status:', response.status);
-
-      const data = await response.json();
+      console.log('📦 Response data:', response.data);
       
-      console.log('📦 Response data:', data);
-      
-      if (data.success) {
-        console.log('✅ Stories loaded:', data.stories.length);
-        setStories(data.stories);
+      if (response.data.success) {
+        console.log('✅ Stories loaded:', response.data.stories.length);
+        setStories(response.data.stories);
       } else {
-        console.error('❌ Failed to load stories:', data.message);
+        console.error('❌ Failed to load stories:', response.data.message);
         setStories([]);
       }
     } catch (error) {
@@ -68,17 +59,13 @@ const StoryManagement = () => {
     if (!confirm('Approve this story?')) return;
 
     try {
-      const response = await fetch(`${API_URL}/traveler-stories/${storyId}/approve`, {
-        method: 'PUT'
-      });
-
-      const data = await response.json();
+      const response = await api.put(`/traveler-stories/${storyId}/approve`);
       
-      if (data.success) {
+      if (response.data.success) {
         alert('✅ Story approved successfully!');
         loadStories();
       } else {
-        alert('❌ ' + data.message);
+        alert('❌ ' + response.data.message);
       }
     } catch (error) {
       console.error('Error approving story:', error);
@@ -90,17 +77,13 @@ const StoryManagement = () => {
     if (!confirm('Reject this story?')) return;
 
     try {
-      const response = await fetch(`${API_URL}/traveler-stories/${storyId}/reject`, {
-        method: 'PUT'
-      });
-
-      const data = await response.json();
+      const response = await api.put(`/traveler-stories/${storyId}/reject`);
       
-      if (data.success) {
+      if (response.data.success) {
         alert('✅ Story rejected');
         loadStories();
       } else {
-        alert('❌ ' + data.message);
+        alert('❌ ' + response.data.message);
       }
     } catch (error) {
       console.error('Error rejecting story:', error);
@@ -112,18 +95,14 @@ const StoryManagement = () => {
     if (!confirm('Delete this story permanently?')) return;
 
     try {
-      const response = await fetch(`${API_URL}/traveler-stories/admin/${storyId}`, {
-        method: 'DELETE'
-      });
-
-      const data = await response.json();
+      const response = await api.delete(`/traveler-stories/admin/${storyId}`);
       
-      if (data.success) {
+      if (response.data.success) {
         alert('✅ Story deleted successfully');
         loadStories();
         setShowModal(false);
       } else {
-        alert('❌ ' + data.message);
+        alert('❌ ' + response.data.message);
       }
     } catch (error) {
       console.error('Error deleting story:', error);

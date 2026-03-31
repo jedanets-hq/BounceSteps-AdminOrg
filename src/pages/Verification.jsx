@@ -42,10 +42,11 @@ const Verification = () => {
     if (!confirm('Approve this provider verification?')) return;
     
     try {
-      await api.post(`/providers/${providerId}/verify`);
+      await api.put(`/payments/verification-requests/${providerId}/approve`);
       fetchVerificationRequests();
       alert('Provider verified successfully!');
     } catch (error) {
+      console.error('Failed to verify provider:', error);
       alert('Failed to verify provider');
     }
   };
@@ -54,12 +55,13 @@ const Verification = () => {
     if (!confirm('Reject this provider verification?')) return;
     
     try {
-      await api.post(`/providers/${providerId}/unverify`, {
+      await api.put(`/payments/verification-requests/${providerId}/reject`, {
         reason: 'Verification rejected by admin'
       });
       fetchVerificationRequests();
       alert('Verification rejected');
     } catch (error) {
+      console.error('Failed to reject verification:', error);
       alert('Failed to reject verification');
     }
   };

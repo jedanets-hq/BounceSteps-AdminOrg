@@ -80,11 +80,11 @@ const Layout = () => {
         {/* Logo */}
         <div className="p-4 border-b border-border flex items-center justify-between">
           {sidebarOpen && (
-            <div className="flex items-center space-x-3">
+            <div className="logo-container">
               <img 
                 src="/bouncesteps-logo.png" 
                 alt="BounceSteps" 
-                className="h-8 w-auto"
+                className="logo-responsive logo-shadow"
                 onError={(e) => {
                   e.target.style.display = 'none';
                   e.target.nextElementSibling.style.display = 'flex';
@@ -94,7 +94,7 @@ const Layout = () => {
                 <div className="text-2xl font-bold text-primary">i</div>
                 <div className="text-xl font-light">Safari</div>
               </div>
-              <div className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded font-medium">
+              <div className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded font-medium ml-2">
                 Admin
               </div>
             </div>
