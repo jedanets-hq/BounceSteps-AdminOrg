@@ -60,8 +60,8 @@ const StoryManagement = () => {
     if (!confirm('Approve this story?')) return;
 
     try {
-      // Use the main traveler-stories endpoint for approve/reject actions
-      const response = await axios.put(`${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL}/api/traveler-stories/${storyId}/approve`);
+      // Use the API service for approve action
+      const response = await api.put(`/traveler-stories/${storyId}/approve`);
       
       if (response.data.success) {
         alert('✅ Story approved successfully!');
@@ -79,8 +79,8 @@ const StoryManagement = () => {
     if (!confirm('Reject this story?')) return;
 
     try {
-      // Use the main traveler-stories endpoint for approve/reject actions
-      const response = await axios.put(`${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL}/api/traveler-stories/${storyId}/reject`);
+      // Use the API service for reject action
+      const response = await api.put(`/traveler-stories/${storyId}/reject`);
       
       if (response.data.success) {
         alert('✅ Story rejected');
@@ -98,8 +98,8 @@ const StoryManagement = () => {
     if (!confirm('Delete this story permanently?')) return;
 
     try {
-      // Use the main traveler-stories endpoint for delete action
-      const response = await axios.delete(`${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL}/api/traveler-stories/admin/${storyId}`);
+      // Use the API service for delete action
+      const response = await api.delete(`/traveler-stories/admin/${storyId}`);
       
       if (response.data.success) {
         alert('✅ Story deleted successfully');

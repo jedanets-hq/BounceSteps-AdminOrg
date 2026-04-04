@@ -3,11 +3,7 @@ import axios from 'axios';
 // Use environment variable with production fallback
 const API_URL = import.meta.env.VITE_API_URL || 
                 import.meta.env.VITE_API_BASE_URL || 
-                'https://api.bouncesteps.com';
-
-if (!API_URL) {
-  throw new Error('🚨 VITE_API_URL or VITE_API_BASE_URL environment variable is required');
-}
+                'https://api.bouncesteps.com/api';
 
 console.log('🚨 API URL IN USE:', API_URL);
 console.log('🔧 Environment Variables:', {
@@ -17,7 +13,7 @@ console.log('🔧 Environment Variables:', {
 });
 
 const api = axios.create({
-  baseURL: `${API_URL}/api`,
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json'
   }
