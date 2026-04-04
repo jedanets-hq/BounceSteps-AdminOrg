@@ -16,7 +16,7 @@ const Travelers = () => {
   const fetchTravelers = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/users', {
+      const response = await api.get('/admin/users', {
         params: {
           page: pagination.page,
           limit: pagination.limit,
@@ -48,7 +48,7 @@ const Travelers = () => {
   const handleSuspend = async (userId) => {
     if (!confirm('Suspend this traveler?')) return;
     try {
-      const response = await api.post(`/users/${userId}/suspend`);
+      const response = await api.post(`/admin/users/${userId}/suspend`);
       console.log('Suspend response:', response.data);
       alert('Traveler suspended successfully!');
       fetchTravelers();
@@ -60,7 +60,7 @@ const Travelers = () => {
 
   const handleRestore = async (userId) => {
     try {
-      const response = await api.post(`/users/${userId}/restore`);
+      const response = await api.post(`/admin/users/${userId}/restore`);
       console.log('Restore response:', response.data);
       alert('Traveler restored successfully!');
       fetchTravelers();

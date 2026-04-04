@@ -17,7 +17,7 @@ const Payments = () => {
   const fetchPayments = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/payments', {
+      const response = await api.get('/admin/payments', {
         params: {
           page: pagination.page,
           limit: pagination.limit,
@@ -36,7 +36,7 @@ const Payments = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await api.get('/payments/stats');
+      const response = await api.get('/admin/payments/stats');
       setStats(response.data.data || null);
     } catch (error) {
       console.error('Failed to fetch stats:', error);
@@ -48,7 +48,7 @@ const Payments = () => {
     if (!reason) return;
 
     try {
-      await api.post(`/payments/${bookingId}/refund`, { reason });
+      await api.post(`/admin/payments/${bookingId}/refund`, { reason });
       fetchPayments();
       fetchStats();
       alert('Refund processed successfully');

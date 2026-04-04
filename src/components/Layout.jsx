@@ -82,12 +82,14 @@ const Layout = () => {
           {sidebarOpen && (
             <div className="logo-container">
               <img 
-                src="/bouncesteps-logo.png" 
+                src="/LOGO.png" 
                 alt="BounceSteps" 
                 className="logo-responsive logo-shadow"
                 onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextElementSibling.style.display = 'flex';
+                  e.target.src = '/bouncesteps-logo.png'; // Fallback
+                  if (e.target.src.includes('bouncesteps-logo.png')) {
+                    e.target.style.display = 'none';
+                  }
                 }}
               />
               <div className="flex items-center space-x-2" style={{display: 'none'}}>

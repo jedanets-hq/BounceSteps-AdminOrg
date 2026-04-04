@@ -16,7 +16,7 @@ const Verification = () => {
   const fetchVerificationRequests = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/payments/verification-requests', {
+      const response = await api.get('/admin/payments/verification-requests', {
         params: { status: filter }
       });
 
@@ -42,7 +42,7 @@ const Verification = () => {
     if (!confirm('Approve this provider verification?')) return;
     
     try {
-      await api.put(`/payments/verification-requests/${providerId}/approve`);
+      await api.put(`/admin/payments/verification-requests/${providerId}/approve`);
       fetchVerificationRequests();
       alert('Provider verified successfully!');
     } catch (error) {
@@ -55,7 +55,7 @@ const Verification = () => {
     if (!confirm('Reject this provider verification?')) return;
     
     try {
-      await api.put(`/payments/verification-requests/${providerId}/reject`, {
+      await api.put(`/admin/payments/verification-requests/${providerId}/reject`, {
         reason: 'Verification rejected by admin'
       });
       fetchVerificationRequests();

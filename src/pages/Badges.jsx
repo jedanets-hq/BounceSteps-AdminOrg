@@ -20,7 +20,7 @@ const BadgeModal = ({ provider, onClose, onSuccess }) => {
     setLoading(true);
 
     try {
-      await api.post(`/providers/${provider.id}/badge`, {
+      await api.post(`/admin/providers/${provider.id}/badge`, {
         badgeType,
         notes
       });
@@ -107,7 +107,8 @@ const Badges = () => {
   const fetchProviders = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/providers', {
+      console.log('🔍 Fetching providers with filters:', { search, filter });
+      const response = await api.get('/admin/providers', {
         params: {
           page: 1,
           limit: 100,
@@ -116,9 +117,14 @@ const Badges = () => {
         }
       });
 
-      setProviders((response.data.data && response.data.data.providers) || []);
+      console.log('📦 Providers Response:', response.data);
+      const providersData = (response.data.data && response.data.data.providers) || [];
+      console.log(`✅ Found ${providersData.length} providers`);
+      setProviders(providersData);
     } catch (error) {
-      console.error('Failed to fetch providers:', error);
+      console.error('❌ Failed to fetch providers:', error);
+      console.error('Error details:', error.response?.data || error.message);
+      alert(`Failed to load providers: ${error.response?.data?.message || error.message}`);
     } finally {
       setLoading(false);
     }
@@ -128,11 +134,15 @@ const Badges = () => {
     if (!confirm('Are you sure you want to remove this badge?')) return;
     
     try {
-      await api.delete(`/providers/${providerId}/badge`);
-      fetchProviders();
+      console.log(`🗑️ Removing badge from provider ${providerId}`);
+      const response = await api.delete(`/admin/providers/${providerId}/badge`);
+      console.log('✅ Badge removal response:', response.data);
       alert('Badge removed successfully!');
+      fetchProviders();
     } catch (error) {
-      alert('Failed to remove badge');
+      console.error('❌ Failed to remove badge:', error);
+      console.error('Error details:', error.response?.data || error.message);
+      alert(`Failed to remove badge: ${error.response?.data?.message || error.message}`);
     }
   };
 

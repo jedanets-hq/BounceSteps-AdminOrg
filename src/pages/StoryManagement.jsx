@@ -13,6 +13,7 @@ import {
   BookOpen
 } from 'lucide-react';
 import api from '../services/api';
+import axios from 'axios';
 
 const StoryManagement = () => {
   const [stories, setStories] = useState([]);
@@ -30,8 +31,8 @@ const StoryManagement = () => {
       setLoading(true);
 
       const endpoint = filter === 'all' 
-        ? '/traveler-stories/all'
-        : `/traveler-stories/all?status=${filter}`;
+        ? '/admin/traveler-stories/all'
+        : `/admin/traveler-stories/all?status=${filter}`;
 
       console.log('🔍 Loading stories from:', endpoint);
 
@@ -59,7 +60,8 @@ const StoryManagement = () => {
     if (!confirm('Approve this story?')) return;
 
     try {
-      const response = await api.put(`/traveler-stories/${storyId}/approve`);
+      // Use the main traveler-stories endpoint for approve/reject actions
+      const response = await axios.put(`${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL}/api/traveler-stories/${storyId}/approve`);
       
       if (response.data.success) {
         alert('✅ Story approved successfully!');
@@ -77,7 +79,8 @@ const StoryManagement = () => {
     if (!confirm('Reject this story?')) return;
 
     try {
-      const response = await api.put(`/traveler-stories/${storyId}/reject`);
+      // Use the main traveler-stories endpoint for approve/reject actions
+      const response = await axios.put(`${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL}/api/traveler-stories/${storyId}/reject`);
       
       if (response.data.success) {
         alert('✅ Story rejected');
@@ -95,7 +98,8 @@ const StoryManagement = () => {
     if (!confirm('Delete this story permanently?')) return;
 
     try {
-      const response = await api.delete(`/traveler-stories/admin/${storyId}`);
+      // Use the main traveler-stories endpoint for delete action
+      const response = await axios.delete(`${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL}/api/traveler-stories/admin/${storyId}`);
       
       if (response.data.success) {
         alert('✅ Story deleted successfully');
@@ -206,6 +210,34 @@ const StoryManagement = () => {
                   </div>
 
                   <p className="text-foreground line-clamp-3">{story.content}</p>
+                  
+                  {/* Story Images */}
+                  {story.images && (() => {
+                    try {
+                      const images = typeof story.images === 'string' ? JSON.parse(story.images) : story.images;
+                      return images && images.length > 0 ? (
+                        <div className="mt-3">
+                          <div className="flex gap-2 overflow-x-auto">
+                            {images.slice(0, 3).map((image, index) => (
+                              <img
+                                key={index}
+                                src={image}
+                                alt={`Story image ${index + 1}`}
+                                className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
+                              />
+                            ))}
+                            {images.length > 3 && (
+                              <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center text-xs text-muted-foreground">
+                                +{images.length - 3}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ) : null;
+                    } catch (e) {
+                      return null;
+                    }
+                  })()}
                 </div>
               </div>
 
@@ -297,6 +329,31 @@ const StoryManagement = () => {
                 <h3 className="font-semibold text-foreground mb-2">Story Content:</h3>
                 <p className="text-foreground whitespace-pre-wrap">{selectedStory.content}</p>
               </div>
+
+              {/* Story Images in Modal */}
+              {selectedStory.images && (() => {
+                try {
+                  const images = typeof selectedStory.images === 'string' ? JSON.parse(selectedStory.images) : selectedStory.images;
+                  return images && images.length > 0 ? (
+                    <div className="pt-4">
+                      <h3 className="font-semibold text-foreground mb-2">Story Images:</h3>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {images.map((image, index) => (
+                          <img
+                            key={index}
+                            src={image}
+                            alt={`Story image ${index + 1}`}
+                            className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => window.open(image, '_blank')}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ) : null;
+                } catch (e) {
+                  return null;
+                }
+              })()}
 
               <div className="flex gap-2 pt-4 border-t border-border">
                 {selectedStory.status === 'pending' && (

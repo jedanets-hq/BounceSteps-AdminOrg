@@ -8,7 +8,8 @@ import {
   RotateCcw,
   Eye,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Trash2
 } from 'lucide-react';
 
 const Users = () => {
@@ -27,7 +28,7 @@ const Users = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/users', {
+      const response = await api.get('/admin/users', {
         params: {
           page: pagination.page,
           limit: pagination.limit,
@@ -60,7 +61,7 @@ const Users = () => {
     if (!confirm('Are you sure you want to suspend this user?')) return;
 
     try {
-      const response = await api.post(`/users/${userId}/suspend`, {
+      const response = await api.post(`/admin/users/${userId}/suspend`, {
         reason: 'Suspended by admin'
       });
       console.log('Suspend response:', response.data);
@@ -74,13 +75,27 @@ const Users = () => {
 
   const handleRestore = async (userId) => {
     try {
-      const response = await api.post(`/users/${userId}/restore`);
+      const response = await api.post(`/admin/users/${userId}/restore`);
       console.log('Restore response:', response.data);
       alert('User restored successfully!');
       fetchUsers();
     } catch (error) {
       console.error('Restore error:', error);
       alert('Failed to restore user: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
+  const handleDelete = async (userId) => {
+    if (!confirm('Are you sure you want to permanently delete this user? This action cannot be undone.')) return;
+
+    try {
+      const response = await api.delete(`/admin/users/${userId}`);
+      console.log('Delete response:', response.data);
+      alert('User deleted permanently!');
+      fetchUsers();
+    } catch (error) {
+      console.error('Delete error:', error);
+      alert('Failed to delete user: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -206,6 +221,13 @@ const Users = () => {
                               <RotateCcw size={18} />
                             </button>
                           )}
+                          <button
+                            onClick={() => handleDelete(user.id)}
+                            className="p-2 text-red-700 hover:bg-red-100 rounded-lg"
+                            title="Delete Permanently"
+                          >
+                            <Trash2 size={18} />
+                          </button>
                         </div>
                       </td>
                     </tr>

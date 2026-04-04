@@ -1,22 +1,21 @@
 import axios from 'axios';
 
-// Production API URL with fallback - FORCE REBUILD WITH NEW URL
-const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://bouncesteps-backend-392429231515.us-central1.run.app/api';
+// Use environment variable - MUST be set
+const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL;
+
+if (!API_URL) {
+  throw new Error('🚨 VITE_API_URL or VITE_API_BASE_URL environment variable is required');
+}
 
 console.log('🚨 API URL IN USE:', API_URL);
 console.log('🔧 Environment Variables:', {
   VITE_API_URL: import.meta.env.VITE_API_URL,
-  VITE_API_BASE_URL: import.meta.env.VITE_API_BASE_URL
+  VITE_API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
+  MODE: import.meta.env.MODE
 });
 
-console.log('🚨 API URL IN USE:', API_URL);
-
-if (!API_URL) {
-  throw new Error('🚨 VITE_API_URL environment variable is required in production');
-}
-
 const api = axios.create({
-  baseURL: `${API_URL}/admin`,
+  baseURL: `${API_URL}/api`,
   headers: {
     'Content-Type': 'application/json'
   }

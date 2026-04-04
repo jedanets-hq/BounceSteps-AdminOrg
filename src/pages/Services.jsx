@@ -25,7 +25,6 @@ const Services = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedServices, setSelectedServices] = useState([]);
-  const [activeTab, setActiveTab] = useState('featured'); // 'featured', 'trending'
   const [showPromotionModal, setShowPromotionModal] = useState(false);
   const [selectedServiceForPromotion, setSelectedServiceForPromotion] = useState(null);
   const [promotionSettings, setPromotionSettings] = useState({
@@ -50,7 +49,7 @@ const Services = () => {
 
   useEffect(() => {
     fetchData();
-  }, [currentPage, categoryFilter, statusFilter, searchQuery, activeTab]);
+  }, [currentPage, categoryFilter, statusFilter, searchQuery]);
 
   const fetchData = async () => {
     try {
@@ -68,18 +67,33 @@ const Services = () => {
       if (searchQuery) params.append('search', searchQuery);
       
       const [servicesRes, statsRes, categoriesRes] = await Promise.all([
-        api.get(`/services?${params.toString()}`),
-        api.get('/services/stats'),
-        api.get('/services/categories')
+        api.get(`/admin/services?${params.toString()}`),
+        api.get('/admin/services/stats'),
+        api.get('/admin/services/categories')
       ]);
       
-      setServices(servicesRes.data.services);
-      setTotalPages(servicesRes.data.pagination.pages);
-      setTotalServices(servicesRes.data.pagination.total);
-      setStats(statsRes.data.stats);
+      console.log('📦 Services Response:', servicesRes.data);
+      console.log('📊 Stats Response:', statsRes.data);
+      
+      // Process services to ensure images is always an array
+      const processedServices = (servicesRes.data.data || []).map(service => ({
+        ...service,
+        images: Array.isArray(service.images) 
+          ? service.images 
+          : (typeof service.images === 'string' && service.images.trim() !== '')
+            ? JSON.parse(service.images)
+            : []
+      }));
+      
+      setServices(processedServices);
+      setTotalPages(servicesRes.data.pagination.totalPages);
+      setTotalServices(servicesRes.data.pagination.totalItems);
+      setStats(statsRes.data.data);
       setCategories(categoriesRes.data.categories);
     } catch (error) {
-      console.error('Failed to fetch services:', error);
+      console.error('❌ Failed to fetch services:', error);
+      console.error('Error details:', error.response?.data || error.message);
+      alert('Failed to load services. Please check console for details.');
     } finally {
       setLoading(false);
     }
@@ -87,37 +101,49 @@ const Services = () => {
 
   const handleToggleFeatured = async (serviceId, currentValue) => {
     try {
-      await api.patch(`/services/${serviceId}/featured`, {
+      console.log(`🌟 Toggling featured for service ${serviceId}: ${currentValue} -> ${!currentValue}`);
+      const response = await api.patch(`/services/${serviceId}/featured`, {
         is_featured: !currentValue
       });
+      console.log('✅ Featured toggle response:', response.data);
+      alert(`Service ${!currentValue ? 'added to' : 'removed from'} featured successfully!`);
       fetchData();
     } catch (error) {
-      console.error('Failed to toggle featured:', error);
-      alert('Failed to update featured status');
+      console.error('❌ Failed to toggle featured:', error);
+      console.error('Error details:', error.response?.data || error.message);
+      alert(`Failed to update featured status: ${error.response?.data?.message || error.message}`);
     }
   };
 
   const handleToggleTrending = async (serviceId, currentValue) => {
     try {
-      await api.patch(`/services/${serviceId}/trending`, {
+      console.log(`📈 Toggling trending for service ${serviceId}: ${currentValue} -> ${!currentValue}`);
+      const response = await api.patch(`/services/${serviceId}/trending`, {
         is_trending: !currentValue
       });
+      console.log('✅ Trending toggle response:', response.data);
+      alert(`Service ${!currentValue ? 'added to' : 'removed from'} trending successfully!`);
       fetchData();
     } catch (error) {
-      console.error('Failed to toggle trending:', error);
-      alert('Failed to update trending status');
+      console.error('❌ Failed to toggle trending:', error);
+      console.error('Error details:', error.response?.data || error.message);
+      alert(`Failed to update trending status: ${error.response?.data?.message || error.message}`);
     }
   };
 
   const handleUpdateStatus = async (serviceId, newStatus) => {
     try {
-      await api.patch(`/services/${serviceId}/status`, {
+      console.log(`🔄 Updating status for service ${serviceId} to ${newStatus}`);
+      const response = await api.patch(`/services/${serviceId}/status`, {
         status: newStatus
       });
+      console.log('✅ Status update response:', response.data);
+      alert(`Service status updated to ${newStatus} successfully!`);
       fetchData();
     } catch (error) {
-      console.error('Failed to update status:', error);
-      alert('Failed to update service status');
+      console.error('❌ Failed to update status:', error);
+      console.error('Error details:', error.response?.data || error.message);
+      alert(`Failed to update service status: ${error.response?.data?.message || error.message}`);
     }
   };
 
@@ -132,7 +158,7 @@ const Services = () => {
     }
     
     try {
-      await api.post('/services/bulk-update', {
+      await api.post('/admin/services/bulk-update', {
         service_ids: selectedServices,
         action,
         value
@@ -151,11 +177,15 @@ const Services = () => {
     }
     
     try {
-      await api.delete(`/services/${serviceId}`);
+      console.log(`🗑️ Deleting service ${serviceId}`);
+      const response = await api.delete(`/admin/services/${serviceId}`);
+      console.log('✅ Delete response:', response.data);
+      alert('Service deleted successfully!');
       fetchData();
     } catch (error) {
-      console.error('Failed to delete service:', error);
-      alert('Failed to delete service');
+      console.error('❌ Failed to delete service:', error);
+      console.error('Error details:', error.response?.data || error.message);
+      alert(`Failed to delete service: ${error.response?.data?.message || error.message}`);
     }
   };
 
@@ -233,44 +263,14 @@ const Services = () => {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">Content Management</h1>
-        <p className="text-muted-foreground">Manage home slides (featured), trending services, and all services</p>
+        <p className="text-muted-foreground">Manage trending services and all services</p>
       </div>
 
-      {/* Tabs Navigation - Only Featured and Trending */}
+      {/* Single Tab - Trending Services Only */}
       <div className="mb-8 border-b border-border">
         <div className="flex gap-1">
           <button
-            onClick={() => {
-              setActiveTab('featured');
-              setCurrentPage(1);
-            }}
-            className={`px-6 py-3 font-medium transition-colors relative ${
-              activeTab === 'featured'
-                ? 'text-primary border-b-2 border-primary'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <Star size={18} />
-              <span>Home Slides</span>
-              {stats && (
-                <span className="ml-2 px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold">
-                  {stats.featured_services}
-                </span>
-              )}
-            </div>
-          </button>
-          
-          <button
-            onClick={() => {
-              setActiveTab('trending');
-              setCurrentPage(1);
-            }}
-            className={`px-6 py-3 font-medium transition-colors relative ${
-              activeTab === 'trending'
-                ? 'text-primary border-b-2 border-primary'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
+            className="px-6 py-3 font-medium transition-colors relative text-primary border-b-2 border-primary"
           >
             <div className="flex items-center gap-2">
               <TrendingUp size={18} />
@@ -287,35 +287,21 @@ const Services = () => {
 
       {/* Tab Description */}
       <div className="mb-6 p-4 bg-card border border-border rounded-lg">
-        {activeTab === 'featured' && (
-          <div className="flex items-start gap-3">
-            <Star className="text-yellow-500 mt-1" size={20} />
-            <div>
-              <h3 className="font-semibold text-foreground mb-1">Home Slides Management</h3>
-              <p className="text-sm text-muted-foreground">
-                Manage services that appear in the hero carousel on the homepage. Click the star icon to add/remove services from home slides. 
-                Only services marked with a star will be displayed on the homepage carousel.
-              </p>
-            </div>
+        <div className="flex items-start gap-3">
+          <TrendingUp className="text-green-500 mt-1" size={20} />
+          <div>
+            <h3 className="font-semibold text-foreground mb-1">Trending Services Management</h3>
+            <p className="text-sm text-muted-foreground">
+              Manage services that appear in the "Trending Services This Month" section on the homepage. 
+              Click the trending icon to add/remove services. Only marked services will be displayed to travelers.
+            </p>
           </div>
-        )}
-        {activeTab === 'trending' && (
-          <div className="flex items-start gap-3">
-            <TrendingUp className="text-green-500 mt-1" size={20} />
-            <div>
-              <h3 className="font-semibold text-foreground mb-1">Trending Services Management</h3>
-              <p className="text-sm text-muted-foreground">
-                Manage services that appear in the "Trending Services This Month" section on the homepage. 
-                Click the trending icon to add/remove services. Only marked services will be displayed to travelers.
-              </p>
-            </div>
-          </div>
-        )}
+        </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - Remove Home Slides */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-card rounded-xl shadow-sm border border-border p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -324,18 +310,6 @@ const Services = () => {
               </div>
               <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
                 <Package className="text-white" size={24} />
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-card rounded-xl shadow-sm border border-border p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground mb-1">Home Slides</p>
-                <h3 className="text-3xl font-bold text-foreground">{stats.featured_services}</h3>
-              </div>
-              <div className="w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center">
-                <Star className="text-white" size={24} />
               </div>
             </div>
           </div>
@@ -410,46 +384,25 @@ const Services = () => {
           </select>
         </div>
         
-        {/* Bulk Actions */}
+        {/* Bulk Actions - Only Trending */}
         {selectedServices.length > 0 && (
           <div className="flex items-center gap-3 pt-4 border-t border-border">
             <span className="text-sm font-medium text-foreground">
               {selectedServices.length} selected
             </span>
-            {activeTab === 'featured' && (
-              <>
-                <button
-                  onClick={() => handleBulkUpdate('featured', true)}
-                  className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors text-sm font-medium"
-                >
-                  <Star size={16} className="inline mr-2" />
-                  Add to Home Slides
-                </button>
-                <button
-                  onClick={() => handleBulkUpdate('featured', false)}
-                  className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm font-medium"
-                >
-                  Remove from Home Slides
-                </button>
-              </>
-            )}
-            {activeTab === 'trending' && (
-              <>
-                <button
-                  onClick={() => handleBulkUpdate('trending', true)}
-                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-medium"
-                >
-                  <TrendingUp size={16} className="inline mr-2" />
-                  Add to Trending
-                </button>
-                <button
-                  onClick={() => handleBulkUpdate('trending', false)}
-                  className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm font-medium"
-                >
-                  Remove from Trending
-                </button>
-              </>
-            )}
+            <button
+              onClick={() => handleBulkUpdate('trending', true)}
+              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-medium"
+            >
+              <TrendingUp size={16} className="inline mr-2" />
+              Add to Trending
+            </button>
+            <button
+              onClick={() => handleBulkUpdate('trending', false)}
+              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm font-medium"
+            >
+              Remove from Trending
+            </button>
           </div>
         )}
       </div>
@@ -505,12 +458,6 @@ const Services = () => {
                         <h3 className="font-semibold text-foreground truncate">{service.title}</h3>
                         <p className="text-sm text-muted-foreground truncate">{service.description}</p>
                         <div className="flex items-center gap-2 mt-1">
-                          {service.is_featured && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                              <Star size={12} className="mr-1" />
-                              Featured
-                            </span>
-                          )}
                           {service.is_trending && (
                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                               <TrendingUp size={12} className="mr-1" />
@@ -566,17 +513,6 @@ const Services = () => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleToggleFeatured(service.id, service.is_featured)}
-                        className={`p-2 rounded-lg transition-colors ${
-                          service.is_featured
-                            ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200'
-                            : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                        }`}
-                        title={service.is_featured ? 'Remove from featured' : 'Add to featured'}
-                      >
-                        <Star size={18} fill={service.is_featured ? 'currentColor' : 'none'} />
-                      </button>
                       <button
                         onClick={() => handleToggleTrending(service.id, service.is_trending)}
                         className={`p-2 rounded-lg transition-colors ${

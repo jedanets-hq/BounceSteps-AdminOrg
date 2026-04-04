@@ -22,7 +22,7 @@ const Providers = () => {
   const fetchProviders = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/providers', {
+      const response = await api.get('/admin/providers', {
         params: {
           page: pagination.page,
           limit: pagination.limit,
@@ -70,42 +70,46 @@ const Providers = () => {
     if (!confirm('Suspend this provider? Their services will be hidden.')) return;
     
     try {
-      // Suspend the user account
+      // Suspend the user account using the provider's user_id
       const provider = providers.find(p => p.id === providerId);
       console.log('Suspending provider:', provider);
       
       if (provider && provider.user_id) {
-        const response = await api.post(`/users/${provider.user_id}/suspend`, {
+        const response = await api.post(`/admin/users/${provider.user_id}/suspend`, {
           reason: 'Suspended by admin'
         });
         console.log('Suspend response:', response.data);
         alert('Provider suspended successfully!');
         fetchProviders();
       } else {
-        alert('Cannot suspend: Provider user_id not found');
+        console.error('Provider data:', provider);
+        alert('Cannot suspend: Provider user_id not found. Please check console for details.');
       }
     } catch (error) {
       console.error('Suspend error:', error);
+      console.error('Error response:', error.response?.data);
       alert('Failed to suspend provider: ' + (error.response?.data?.message || error.message));
     }
   };
 
   const handleRestore = async (providerId) => {
     try {
-      // Restore the user account
+      // Restore the user account using the provider's user_id
       const provider = providers.find(p => p.id === providerId);
       console.log('Restoring provider:', provider);
       
       if (provider && provider.user_id) {
-        const response = await api.post(`/users/${provider.user_id}/restore`);
+        const response = await api.post(`/admin/users/${provider.user_id}/restore`);
         console.log('Restore response:', response.data);
         alert('Provider restored successfully!');
         fetchProviders();
       } else {
-        alert('Cannot restore: Provider user_id not found');
+        console.error('Provider data:', provider);
+        alert('Cannot restore: Provider user_id not found. Please check console for details.');
       }
     } catch (error) {
       console.error('Restore error:', error);
+      console.error('Error response:', error.response?.data);
       alert('Failed to restore provider: ' + (error.response?.data?.message || error.message));
     }
   };

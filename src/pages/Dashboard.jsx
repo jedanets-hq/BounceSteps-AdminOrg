@@ -41,29 +41,49 @@ const StatCard = ({ title, value, growth, icon: Icon, color, subtitle }) => {
 
 const ActivityItem = ({ item }) => {
   const getIcon = () => {
-    switch (item.type) {
+    const type = item.type || item.activity_type;
+    switch (type) {
       case 'user_registered':
+      case 'user_registration':
         return <Users className="text-primary" size={20} />;
       case 'booking_created':
         return <CheckCircle className="text-success" size={20} />;
       case 'service_created':
         return <Building2 className="text-secondary" size={20} />;
+      case 'provider_registration':
+        return <Building2 className="text-green-500" size={20} />;
       default:
         return <Activity className="text-muted-foreground" size={20} />;
     }
   };
 
   const getLabel = () => {
-    switch (item.type) {
+    const type = item.type || item.activity_type;
+    switch (type) {
       case 'user_registered':
+      case 'user_registration':
         return 'New User Registration';
       case 'booking_created':
         return 'New Booking';
       case 'service_created':
         return 'New Service Added';
+      case 'provider_registration':
+        return 'New Provider Registration';
       default:
-        return item.type;
+        return type || 'Activity';
     }
+  };
+
+  const getName = () => {
+    return item.name || item.description || 'Unknown Activity';
+  };
+
+  const getEmail = () => {
+    return item.email || item.user_type || item.business_type || '';
+  };
+
+  const getTimestamp = () => {
+    return item.created_at || item.timestamp || new Date().toISOString();
   };
 
   return (
@@ -72,14 +92,14 @@ const ActivityItem = ({ item }) => {
         {getIcon()}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-medium text-foreground truncate">{item.name}</p>
-        <p className="text-sm text-muted-foreground truncate">{item.email || item.user_type}</p>
+        <p className="font-medium text-foreground truncate">{getName()}</p>
+        <p className="text-sm text-muted-foreground truncate">{getEmail()}</p>
         <div className="flex items-center gap-2 mt-1">
           <span className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded-full font-medium">
             {getLabel()}
           </span>
           <span className="text-xs text-muted-foreground">
-            {new Date(item.created_at).toLocaleString()}
+            {new Date(getTimestamp()).toLocaleString()}
           </span>
         </div>
       </div>
@@ -101,14 +121,50 @@ const Dashboard = () => {
     try {
       setLoading(true);
       const [statsRes, activityRes] = await Promise.all([
-        api.get(`/dashboard/stats?period=${period}`),
-        api.get('/dashboard/activity?limit=10')
+        api.get(`/admin/dashboard/stats?period=${period}`),
+        api.get('/admin/dashboard/activity?limit=10')
       ]);
 
-      setStats(statsRes.data.data || null);
-      setActivity(activityRes.data.data || []);
+      console.log('📊 Raw stats response:', statsRes.data);
+      console.log('📊 Raw activity response:', activityRes.data);
+
+      // Handle both old and new data formats
+      const rawStats = statsRes.data.data || statsRes.data || {};
+      
+      // Normalize stats data to handle both formats
+      const normalizedStats = {
+        users: {
+          total: rawStats.users?.total || rawStats.users || 0,
+          growth: rawStats.users?.growth || 0
+        },
+        providers: {
+          total: rawStats.providers?.total || rawStats.providers || 0,
+          verified: rawStats.providers?.verified || rawStats.providers_verified || 0,
+          growth: rawStats.providers?.growth || 0
+        },
+        bookings: {
+          total: rawStats.bookings?.total || rawStats.bookings || 0,
+          completed: rawStats.bookings?.completed || rawStats.bookings_completed || 0,
+          growth: rawStats.bookings?.growth || 0
+        },
+        services: {
+          total: rawStats.services?.total || rawStats.services || 0,
+          active: rawStats.services?.active || rawStats.services_active || 0,
+          growth: rawStats.services?.growth || 0
+        },
+        revenue: rawStats.revenue || 0
+      };
+
+      console.log('📊 Normalized stats:', normalizedStats);
+      setStats(normalizedStats);
+      
+      // Handle activity data - ensure we get the array
+      const activityData = activityRes.data.data || [];
+      console.log('📊 Activity data:', activityData);
+      setActivity(Array.isArray(activityData) ? activityData : []);
     } catch (error) {
-      console.error('Failed to fetch dashboard data:', error);
+      console.error('❌ Failed to fetch dashboard data:', error);
+      console.error('Error details:', error.response?.data || error.message);
     } finally {
       setLoading(false);
     }

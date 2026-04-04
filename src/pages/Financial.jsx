@@ -9,13 +9,10 @@ const Financial = () => {
   const [editingAccount, setEditingAccount] = useState(null);
 
   const [formData, setFormData] = useState({
-    account_type: 'visa_card',
+    account_type: 'bank_account',
     account_holder_name: '',
     account_number: '',
     bank_name: '',
-    card_last_four: '',
-    expiry_date: '',
-    mobile_number: '',
     is_primary: false
   });
 
@@ -26,7 +23,7 @@ const Financial = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/payments/accounts');
+      const response = await api.get('/admin/payments/accounts');
       setAccounts(response.data.accounts || []);
     } catch (error) {
       console.error('Failed to fetch data:', error);
@@ -40,9 +37,9 @@ const Financial = () => {
     
     try {
       if (editingAccount) {
-        await api.put(`/payments/accounts/${editingAccount.id}`, formData);
+        await api.put(`/admin/payments/accounts/${editingAccount.id}`, formData);
       } else {
-        await api.post('/payments/accounts', formData);
+        await api.post('/admin/payments/accounts', formData);
       }
       
       setShowAddAccount(false);
@@ -59,7 +56,7 @@ const Financial = () => {
     if (!confirm('Are you sure you want to delete this payment account?')) return;
     
     try {
-      await api.delete(`/payments/accounts/${id}`);
+      await api.delete(`/admin/payments/accounts/${id}`);
       fetchData();
       alert('Payment account deleted successfully!');
     } catch (error) {
@@ -70,13 +67,10 @@ const Financial = () => {
   const handleEdit = (account) => {
     setEditingAccount(account);
     setFormData({
-      account_type: account.account_type,
+      account_type: 'bank_account',
       account_holder_name: account.account_holder_name,
       account_number: account.account_number,
       bank_name: account.bank_name || '',
-      card_last_four: account.card_last_four || '',
-      expiry_date: account.expiry_date || '',
-      mobile_number: account.mobile_number || '',
       is_primary: account.is_primary
     });
     setShowAddAccount(true);
@@ -84,23 +78,17 @@ const Financial = () => {
 
   const resetForm = () => {
     setFormData({
-      account_type: 'visa_card',
+      account_type: 'bank_account',
       account_holder_name: '',
       account_number: '',
       bank_name: '',
-      card_last_four: '',
-      expiry_date: '',
-      mobile_number: '',
       is_primary: false
     });
   };
 
   const getAccountTypeLabel = (type) => {
     const labels = {
-      bank_account: 'Bank Account',
-      visa_card: 'Visa Card',
-      mastercard: 'Mastercard',
-      mobile_money: 'Mobile Money'
+      bank_account: 'Bank Account'
     };
     return labels[type] || type;
   };
@@ -148,11 +136,9 @@ const Financial = () => {
                       onChange={(e) => setFormData({ ...formData, account_type: e.target.value })}
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                       required
+                      disabled
                     >
-                      <option value="visa_card">Visa Card</option>
-                      <option value="mastercard">Mastercard</option>
                       <option value="bank_account">Bank Account</option>
-                      <option value="mobile_money">Mobile Money</option>
                     </select>
                   </div>
 
@@ -171,7 +157,7 @@ const Financial = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      Account/Card Number
+                      Account Number
                     </label>
                     <input
                       type="text"
@@ -182,63 +168,18 @@ const Financial = () => {
                     />
                   </div>
 
-                  {(formData.account_type === 'visa_card' || formData.account_type === 'mastercard') && (
-                    <>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Last 4 Digits
-                        </label>
-                        <input
-                          type="text"
-                          maxLength="4"
-                          value={formData.card_last_four}
-                          onChange={(e) => setFormData({ ...formData, card_last_four: e.target.value })}
-                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Expiry Date (MM/YYYY)
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="12/2025"
-                          value={formData.expiry_date}
-                          onChange={(e) => setFormData({ ...formData, expiry_date: e.target.value })}
-                          className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                        />
-                      </div>
-                    </>
-                  )}
-
-                  {formData.account_type === 'bank_account' && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Bank Name
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.bank_name}
-                        onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      />
-                    </div>
-                  )}
-
-                  {formData.account_type === 'mobile_money' && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Mobile Number
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.mobile_number}
-                        onChange={(e) => setFormData({ ...formData, mobile_number: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                      />
-                    </div>
-                  )}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Bank Name
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.bank_name}
+                      onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      required
+                    />
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -316,9 +257,6 @@ const Financial = () => {
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                           {account.bank_name && <div>Bank: {account.bank_name}</div>}
-                          {account.card_last_four && <div>Last 4: {account.card_last_four}</div>}
-                          {account.expiry_date && <div>Expires: {account.expiry_date}</div>}
-                          {account.mobile_number && <div>Mobile: {account.mobile_number}</div>}
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex flex-col gap-1">
