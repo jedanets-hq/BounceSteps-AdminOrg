@@ -76,7 +76,7 @@ const Services = () => {
       console.log('📊 Stats Response:', statsRes.data);
       
       // Process services to ensure images is always an array
-      const processedServices = (servicesRes.data.data || []).map(service => ({
+      const processedServices = (servicesRes.data.services || servicesRes.data.data || []).map(service => ({
         ...service,
         images: Array.isArray(service.images) 
           ? service.images 
