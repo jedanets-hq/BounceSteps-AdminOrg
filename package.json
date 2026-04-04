@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --port 5176",
     "build": "vite build",
+    "build:production": "VITE_API_URL=https://api.bouncesteps.com VITE_API_BASE_URL=https://api.bouncesteps.com VITE_NODE_ENV=production vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0"
   },
