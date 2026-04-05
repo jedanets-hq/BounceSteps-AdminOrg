@@ -19,11 +19,34 @@ const api = axios.create({
   }
 });
 
+// Add JWT token to all requests
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+      console.log('✅ JWT token added to request');
+    } else {
+      console.log('⚠️ No JWT token found in localStorage');
+    }
+    return config;
+  },
+  (error) => {
+    console.error('Request interceptor error:', error);
+    return Promise.reject(error);
+  }
+);
+
 // Handle responses
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     console.error('API Error:', error.response?.data || error.message);
+    if (error.response?.status === 401) {
+      console.error('⚠️ Unauthorized - Token may be expired');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('token');
+    }
     return Promise.reject(error);
   }
 );

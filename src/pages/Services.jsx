@@ -102,7 +102,7 @@ const Services = () => {
   const handleToggleFeatured = async (serviceId, currentValue) => {
     try {
       console.log(`🌟 Toggling featured for service ${serviceId}: ${currentValue} -> ${!currentValue}`);
-      const response = await api.patch(`/services/${serviceId}/featured`, {
+      const response = await api.patch(`/admin/services/${serviceId}/featured`, {
         is_featured: !currentValue
       });
       console.log('✅ Featured toggle response:', response.data);
@@ -118,7 +118,7 @@ const Services = () => {
   const handleToggleTrending = async (serviceId, currentValue) => {
     try {
       console.log(`📈 Toggling trending for service ${serviceId}: ${currentValue} -> ${!currentValue}`);
-      const response = await api.patch(`/services/${serviceId}/trending`, {
+      const response = await api.patch(`/admin/services/${serviceId}/trending`, {
         is_trending: !currentValue
       });
       console.log('✅ Trending toggle response:', response.data);
@@ -134,7 +134,7 @@ const Services = () => {
   const handleUpdateStatus = async (serviceId, newStatus) => {
     try {
       console.log(`🔄 Updating status for service ${serviceId} to ${newStatus}`);
-      const response = await api.patch(`/services/${serviceId}/status`, {
+      const response = await api.patch(`/admin/services/${serviceId}/status`, {
         status: newStatus
       });
       console.log('✅ Status update response:', response.data);
@@ -221,7 +221,7 @@ const Services = () => {
     if (!selectedServiceForPromotion) return;
     
     try {
-      await api.patch(`/services/${selectedServiceForPromotion.id}/promotion`, promotionSettings);
+      await api.patch(`/admin/services/${selectedServiceForPromotion.id}/promotion`, promotionSettings);
       alert('Promotion settings updated successfully!');
       handleClosePromotionModal();
       fetchData();
